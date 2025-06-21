@@ -1,14 +1,15 @@
-import { supabase } from '../lib/supabase'
+import { supabase } from './supabase.js';
 
-document.querySelector('form').addEventListener('submit', async (e) => {
-  e.preventDefault()
-  const email = e.target.email.value
-  const password = e.target.password.value
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
 
-  const { error } = await supabase.auth.signInWithPassword({ email, password })
-  if (!error) {
-    window.location.href = '/'
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    alert('Błąd logowania: ' + error.message);
   } else {
-    alert(error.message)
+    window.location.href = '/';
   }
-})
+});
