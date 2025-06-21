@@ -1,4 +1,6 @@
 import { supabase } from './supabase.js';
+const { data: { user } } = await supabase.auth.getUser();
+const isLoggedIn = !!user;
 
 main();
 
