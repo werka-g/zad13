@@ -3,6 +3,13 @@ import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import { glob } from 'node:fs/promises'
 
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+  base: '/zad13/',
+});
+
+
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const inputs = [];
