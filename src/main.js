@@ -5,7 +5,7 @@ main();
 async function main() {
   console.log('main.js uruchomiony');
 
-  // Obsługa modala "dodaj artykuł"
+ 
   document.getElementById('add-article-btn').addEventListener('click', () => {
     document.getElementById('add-article-modal').classList.remove('hidden');
   });
@@ -45,12 +45,11 @@ async function main() {
     e.target.reset();
     document.getElementById('add-article-modal').classList.add('hidden');
 
-    // Odśwież listę
     const articles = await fetchArticles();
     renderArticles(articles);
   });
 
-  // Na start załaduj artykuły
+
   const articles = await fetchArticles();
   renderArticles(articles);
 }
