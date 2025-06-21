@@ -1,87 +1,84 @@
 import { supabase } from './supabase.js';
-const { data: { user } } = await supabase.auth.getUser();
-const isLoggedIn = !!user;
 
-main();
+let currentUser;
 
-async function main() {
-  console.log('main.js uruchomiony');
+window.addEventListener('DOMContentLoaded', async () => {
+  const { data: { user } } = await supabase.auth.getUser();
+  currentUser = user;
 
- 
-  document.getElementById('add-article-btn').addEventListener('click', () => {
-    document.getElementById('add-article-modal').classList.remove('hidden');
+  if (user) {
+    document.getElementById('logout-btn').style.display = 'block';
+  }
+
+  document.getElementById('logout-btn').addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    window.location.reload();
   });
 
-  document.getElementById('cancel-add').addEventListener('click', () => {
-    document.getElementById('add-article-modal').classList.add('hidden');
+  document.getElementById('add-btn').addEventListener('click', () => {
+    document.getElementById('add-form').style.display = 'block';
   });
 
-  document.getElementById('add-article-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const title = e.target.title.value.trim();
-    const subtitle = e.target.subtitle.value.trim();
-    const author = e.target.author.value.trim();
-    const content = e.target.content.value.trim();
-
-    if (!title || !subtitle || !author || !content) {
-      alert('Wypełnij wszystkie pola!');
-      return;
-    }
-
-    const { error } = await supabase
-      .from('articles')
-      .insert([{
-        title,
-        subtitle,
-        author,
-        content,
-        created_at: new Date().toISOString()
-      }]);
-
-    if (error) {
-      alert('Błąd podczas dodawania artykułu: ' + error.message);
-      return;
-    }
-
-    e.target.reset();
-    document.getElementById('add-article-modal').classList.add('hidden');
-
-    const articles = await fetchArticles();
-    renderArticles(articles);
+  document.getElementById('save-article').addEventListener('click', async () => {
+    const title = document.getElementById('add-title').value;
+    const author = document.getElementById('add-author').value;
+    const content = document.getElementById('add-content').value;
+    await supabase.from('articles').insert([{ title, author, content, created_at: new Date().toISOString() }]);
+    document.getElementById('add-form').style.display = 'none';
+    fetchArticles();
   });
 
+  document.getElementById('cancel-edit').addEventListener('click', () => {
+    document.getElementById('edit-form').style.display = 'none';
+  });
 
-  const articles = await fetchArticles();
-  renderArticles(articles);
-}
+  fetchArticles();
+});
 
 async function fetchArticles() {
-  const { data, error } = await supabase
-    .from('articles')
-    .select('*')
-    .order('created_at', { ascending: false });
+  const { data } = await supabase.from('articles').select('*').order('created_at', { ascending: false });
+  const container = document.getElementById('articles');
+  container.innerHTML = '';
 
-  if (error) {
-    console.error('Błąd pobierania artykułów:', error);
-    return [];
-  }
+  data.forEach(article => {
+    const div = document.createElement('div');
+    div.innerHTML = `
+      <h2>${article.title}</h2>
+      <h3>${article.author}</h3>
+      <small>${article.created_at}</small>
+      <p>${article.content}</p>
+    `;
 
-  return data;
+    if (currentUser) {
+      const del = document.createElement('button');
+      del.textContent = 'Usuń';
+      del.onclick = async () => {
+        await supabase.from('articles').delete().eq('id', article.id);
+        fetchArticles();
+      };
+      div.appendChild(del);
+
+      const edit = document.createElement('button');
+      edit.textContent = 'Edytuj';
+      edit.onclick = () => {
+        document.getElementById('edit-title').value = article.title;
+        document.getElementById('edit-author').value = article.author;
+        document.getElementById('edit-content').value = article.content;
+        document.getElementById('edit-form').style.display = 'block';
+        document.getElementById('save-edit').onclick = async () => {
+          await supabase.from('articles').update({
+            title: document.getElementById('edit-title').value,
+            author: document.getElementById('edit-author').value,
+            content: document.getElementById('edit-content').value,
+            created_at: new Date().toISOString()
+          }).eq('id', article.id);
+          document.getElementById('edit-form').style.display = 'none';
+          fetchArticles();
+        };
+      };
+      div.appendChild(edit);
+    }
+
+    container.appendChild(div);
+  });
 }
-
-function renderArticles(articles) {
-  const container = document.getElementById('articles-list');
-  if (!container) {
-    console.error('Brak elementu #articles-list');
-    return;
-  }
-
-  if (!articles.length) {
-    container.innerHTML = '<p>Brak artykułów do wyświetlenia.</p>';
-    return;
-  }
-
-  container.innerHTML = articles.map(article => `
-    <article class="border rounded p-4 shadow hover:shadow-lg transition">
-      <h2
