@@ -8,7 +8,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
-    alert('Błąd logowania: ' + error.message);
+    alert('Błąd logowania');
   } else {
     window.location.href = '/';
   }
