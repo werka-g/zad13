@@ -1,15 +1,16 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="pl">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite App</title>
-    <link rel="stylesheet" href="/style.css">
+    <title>Login</title>
   </head>
   <body>
-    <div id="app">
-      <a href="/">Home</a>
-    </div>
-    <script type="module" src="/login/main.js"></script>
+    <form id="login-form">
+      <input type="email" id="email" placeholder="Email" required />
+      <input type="password" id="password" placeholder="Hasło" required />
+      <button type="submit">Zaloguj</button>
+    </form>
+
+    <script type="module" src="/src/login.js"></script>
   </body>
 </html>
